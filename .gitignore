@@ -1,0 +1,4 @@
+# ignore saved/exported data
+*.atg
+*.coe
+__pycache__/

@@ -81,14 +81,15 @@ class Application:
         frame2 = Frame(self.root, bd=2, relief=FLAT)
         frame2.grid(row=3, column=0, sticky=NW)
         # Add a canvas in that frame.
-        canvas = Canvas(frame2)
-        canvas.grid(row=0, column=0)
+        self.canvas = Canvas(frame2)
+        self.canvas.grid(row=0, column=0)
         # Create a vertical scrollbar linked to the canvas.
-        vsbar = Scrollbar(frame2, orient=VERTICAL, command=canvas.yview)
+        vsbar = Scrollbar(frame2, orient=VERTICAL, command=self.canvas.yview)
         vsbar.grid(row=0, column=1, sticky=NS)
-        canvas.configure(yscrollcommand=vsbar.set)
+        self.canvas.configure(yscrollcommand=vsbar.set)
+        self.canvas.bind_all("<MouseWheel>", self.on_mousewheel)
 
-        text_frame = Frame(canvas, bd=5, relief=GROOVE, padx=15, pady=15)
+        text_frame = Frame(self.canvas, bd=5, relief=GROOVE, padx=15, pady=15)
         Label(text_frame, text="Entry").grid(column=0,row=0)
         Label(text_frame, text="Address").grid(column=1,row=0)
         Label(text_frame, text="Data").grid(column=2,row=0)
@@ -159,13 +160,13 @@ class Application:
         text_frame.grid(row=6, columnspan=5)
 
         # Create canvas window to hold the buttons_frame.
-        canvas.create_window((0,0), window=text_frame, anchor=NW)
+        self.canvas.create_window((0,0), window=text_frame, anchor=NW)
         text_frame.update_idletasks()  # Needed to make bbox info available.
-        bbox = canvas.bbox(ALL)  # Get bounding box of canvas with Buttons.
+        bbox = self.canvas.bbox(ALL)  # Get bounding box of canvas with Buttons.
         # Define the scrollable region as entire canvas with only the desired
         # number of rows and columns displayed.
         w, h = bbox[2]-bbox[1], bbox[3]-bbox[1]
-        canvas.configure(scrollregion=bbox, width=w, height=255)
+        self.canvas.configure(scrollregion=bbox, width=w, height=255)
 
         buttons_frame = Frame(self.root, bd=5, relief=GROOVE, padx=5, pady=5)
         self.quitButton = Button(buttons_frame, text='Quit', command=quit)
@@ -181,6 +182,13 @@ class Application:
         self.helpButton = Button(buttons_frame, text='Help', command=self.help_dialog)
         self.helpButton.grid(row=0, column=5, padx=20)
         buttons_frame.grid()
+        
+    def on_mousewheel(self, event):
+        # Cross platform scroll wheel event
+        if event.num == 4 or event.delta > 0:
+            self.canvas.yview_scroll(-1, "units")
+        elif event.num == 5 or event.delta < 0:
+            self.canvas.yview_scroll(1, "units")
 
     def to_hex(self, string):
         if string == '':
